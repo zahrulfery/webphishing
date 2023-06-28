@@ -16,7 +16,7 @@ from .scripts import external_features as ef
 from .scripts import url_features as uf
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
+# testing liat performance
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):
