@@ -96,9 +96,10 @@ def result(request):
         ratio_intMedia = cf.internal_media(Media)
         avg_word_path = uf.average_word_length(words_raw_path)
         avg_word_host = uf.average_word_length(words_raw_host)
+        nb_hyphens = uf.count_hyphens(url)
 
         data_input = [google_index, page_rank, nb_www, ratio_digits_url, domain_in_title, domain_age, nb_hyperlinks, phish_hints, ip, nb_qm, length_url, ratio_intHyperlinks, nb_slash, nb_eq,
-                      length_hostname, shortest_word_host, ratio_digits_host, empty_title, prefix_suffix, nb_dots, longest_word_path, avg_word_path, avg_word_host, tld_in_subdomain, longest_words_raw]
+                      length_hostname, shortest_word_host, ratio_digits_host, empty_title, prefix_suffix, nb_dots, longest_word_path, avg_word_path, avg_word_host, tld_in_subdomain, longest_words_raw,nb_hyphens]
 
         path = str(Path(__file__).resolve().parent.parent)
 
