@@ -195,6 +195,7 @@ def result(request):
         page_rank = ef.page_rank(api_key, domain)
         print("page_rank : ", page_rank)
         
+        # data_input = [url, length_url, length_hostname, nb_dots, nb_hyphens, nb_qm, nb_slash, nb_space, nb_www, ratio_digits_url, ratio_digits_host, length_words_raw, shortest_words_raw, shortest_word_host, shortest_word_path, longest_words_raw, longest_word_host, longest_word_path, avg_words_raw, avg_word_host, avg_word_path, phish_hints, domain_in_brand, nb_hyperlinks, ratio_intHyperlinks, ratio_extHyperlinks, nb_extCSS, ratio_extRedirection, ratio_extErrors, links_in_tags, ratio_extMedia, safe_anchor, domain_registration_length, domain_age, web_traffic, google_index, page_rank]
         data_input = [length_url, length_hostname, nb_dots, nb_hyphens, nb_qm, nb_slash, nb_space, nb_www, ratio_digits_url, ratio_digits_host, length_words_raw, shortest_words_raw, shortest_word_host, shortest_word_path, longest_words_raw, longest_word_host, longest_word_path, avg_words_raw, avg_word_host, avg_word_path, phish_hints, domain_in_brand, nb_hyperlinks, ratio_intHyperlinks, ratio_extHyperlinks, nb_extCSS, ratio_extRedirection, ratio_extErrors, links_in_tags, ratio_extMedia, safe_anchor, domain_registration_length, domain_age, web_traffic, google_index, page_rank]
         print("data_input : ", data_input)
         
@@ -241,11 +242,12 @@ def result(request):
         # input_shape = load_model.layers[0].input_shape
         # print("Input shape:", input_shape)
 
-        # Assuming data_input is a list or array with shape (37,)
+        # Assuming data_input is a list or array with shape (36)
+        # data_input = np.reshape(data_input, (1, 36))
+        
         data_input = np.array(data_input)
-        print('data_input[:-1]', data_input[:-1])
-        print('data_input[:-1].reshape(1, -1)', data_input[:-1].reshape(1, -1))
-        reshaped_input = data_input.reshape(1, -1)  # Remove the last element and reshape to (1, 36)
+        reshaped_input = data_input.reshape(1, -1)  # Reshape to (1, 36) assuming 36 is the desired number of features
+        # reshaped_input = data_input[:-1].reshape(1, -1)  # Remove the last element and reshape to (1, 36)
 
 
         load_model.compile(loss=[tf.keras.losses.CategoricalCrossentropy(), tf.keras.losses.MeanSquaredError()],

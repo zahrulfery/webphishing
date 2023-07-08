@@ -18,6 +18,15 @@ import warnings
 def test():
     return "Testing..."
 
+def url_exists(url):
+    try:
+        response = requests.head(url, timeout=5)
+        if response.status_code == 200:
+            return 1  # URL exists
+        else:
+            return 0  # URL does not exist
+    except requests.exceptions.RequestException:
+        return 0  # URL does not exist
 
 def is_URL_accessible(url):
     page = None

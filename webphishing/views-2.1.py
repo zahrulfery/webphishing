@@ -242,17 +242,21 @@ def result(request):
         # print("Input shape:", input_shape)
 
         # Assuming data_input is a list or array with shape (37,)
-        data_input = np.array(data_input)
-        print('data_input[:-1]', data_input[:-1])
-        print('data_input[:-1].reshape(1, -1)', data_input[:-1].reshape(1, -1))
-        reshaped_input = data_input.reshape(1, -1)  # Remove the last element and reshape to (1, 36)
+        # data_input = np.array(data_input)
+        # reshaped_input = np.reshape(data_input, (1, 36))
+        
+        # data_input = np.array(data_input)
+        # reshaped_input = np.reshape(data_input, (1, 36))
+        # print('reshaped_input', reshaped_input)
+        # print('np.reshape(data_input, (1, 36))', np.reshape(data_input, (1, 36)))
+        # reshaped_input = data_input[:-1].reshape(1, -1)  # Remove the last element and reshape to (1, 36)
 
 
         load_model.compile(loss=[tf.keras.losses.CategoricalCrossentropy(), tf.keras.losses.MeanSquaredError()],
                         optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
                         metrics=['accuracy', tf.keras.metrics.MeanSquaredError()])
-        # preds = load_model.predict(data_input)
-        preds = load_model.predict(reshaped_input)
+        preds = load_model.predict([data_input])
+        # preds = load_model.predict(reshaped_input)
 
 
         result = np.argmax(preds, axis=1)
@@ -260,7 +264,7 @@ def result(request):
 
         # return JsonResponse({"data_input": data_input, "data_scale": json.dumps(data_scale[0], cls=NpEncoder), "result": json.dumps(result[0], cls=NpEncoder)})
 
-        return render(request, 'result.html', context={"url": url, "data_input": data_input, "data_scale": reshaped_input[0], "result": result, "probability": {
+        return render(request, 'result.html', context={"url": url, "data_input": data_input, "data_scale": data_input[0], "result": result, "probability": {
             "phishing": preds[0][0],
             "legitimate": preds[0][1]
         }})
