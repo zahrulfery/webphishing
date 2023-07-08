@@ -17,9 +17,148 @@ def nb_hyperlinks(Href, Link, Media, Form, CSS, Favicon):
 # def nb_hyperlinks(dom):
 #     return len(dom.find("href")) + len(dom.find("src"))
 
+def nb_extCSS(CSS):
+    return len(CSS['externals'])
+
+def ratio_extRedirection(Href, Link, Media, Form, CSS, Favicon):
+    total_external_urls = (
+        len(Href['externals'])
+        + len(Link['externals'])
+        + len(Media['externals'])
+        + len(Form['externals'])
+        + len(CSS['externals'])
+        + len(Favicon['externals'])
+    )
+
+    redirect_count = 0
+    for external_url in Href['externals'] + Link['externals'] + Media['externals'] + Form['externals'] + CSS['externals'] + Favicon['externals']:
+        response = requests.head(external_url, allow_redirects=True)
+        if response.status_code != 200:
+            redirect_count += 1
+
+    if total_external_urls == 0:
+        return 0
+    else:
+        return redirect_count / total_external_urls
+
+import requests
+
+def ratio_extErrors(Href, Link, Media, Form, CSS, Favicon):
+    total_external_urls = (
+        len(Href['externals'])
+        + len(Link['externals'])
+        + len(Media['externals'])
+        + len(Form['externals'])
+        + len(CSS['externals'])
+        + len(Favicon['externals'])
+    )
+
+    error_count = 0
+    for external_url in Href['externals'] + Link['externals'] + Media['externals'] + Form['externals'] + CSS['externals'] + Favicon['externals']:
+        response = requests.head(external_url)
+        if response.status_code != 200:
+            error_count += 1
+
+    if total_external_urls == 0:
+        return 0
+    else:
+        return error_count / total_external_urls
+
+from bs4 import BeautifulSoup
+
+def ratio_extMedia(Media):
+    total_media = len(Media['internals']) + len(Media['externals'])
+    if total_media == 0:
+        return 0
+    else:
+        return len(Media['externals']) / total_media
+    
+# import html
+
+# def safe_anchor(text):
+#     safe_text = html.escape(text)
+#     return safe_text
+
+import requests
+from bs4 import BeautifulSoup
+import requests
+from bs4 import BeautifulSoup
+
+def get_anchor_links_from_url(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print("Error occurred while making the request:", str(e))
+        return None
+
+    html_content = response.text
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    anchor_links = {
+        'safe': [],
+        'unsafe': []
+    }
+
+    # Extract anchor links from <a> tags
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        if href:
+            anchor_links['unsafe'].append(href)  # Assume all anchor links are unsafe initially
+
+    return anchor_links
+
+def safe_anchor(Anchor):
+    total = len(Anchor['safe']) + len(Anchor['unsafe'])
+    unsafe = len(Anchor['unsafe'])
+    try:
+        percentile = (unsafe / float(total)) * 100
+    except ZeroDivisionError:
+        return 0.0
+    return percentile
+
+
+import requests
+from bs4 import BeautifulSoup
+
+def get_text_from_url(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print("Error occurred while making the request:", str(e))
+        return None
+
+    html_content = response.text
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    # Extract the text from specific HTML elements
+    text = ""
+    for element in soup.find_all(["p", "div", "span"]):
+        text += element.get_text() + "\n"
+
+    return text
+
+
 #################################################################################################################################
 #               Internal hyperlinks ratio (Kumar Jain'18)
 #################################################################################################################################
+
+def ratio_extHyperlinks(Href, Link, Media, Form, CSS, Favicon):
+    total_hyperlinks = nb_hyperlinks(Href, Link, Media, Form, CSS, Favicon)
+    total_external_hyperlinks = (
+        len(Href['externals'])
+        + len(Link['externals'])
+        + len(Media['externals'])
+        + len(Form['externals'])
+        + len(CSS['externals'])
+        + len(Favicon['externals'])
+    )
+
+    if total_hyperlinks == 0:
+        return 0
+    else:
+        return total_external_hyperlinks / total_hyperlinks
 
 
 def h_total(Href, Link, Media, Form, CSS, Favicon):
@@ -395,14 +534,40 @@ def safe_anchor(Anchor):
 #               Percentile of internal links : links_in_tags in Zaini'2019 but without <Meta> tag
 #################################################################################################################################
 
-def links_in_tags(Link):
-    total = len(Link['internals']) +  len(Link['externals'])
-    internals = len(Link['internals'])
+# def links_in_tags(Link):
+#     total = len(Link['internals']) +  len(Link['externals'])
+#     internals = len(Link['internals'])
+#     try:
+#         percentile = internals / float(total) * 100
+#     except:
+#         return 0
+#     return percentile
+
+import requests
+from bs4 import BeautifulSoup
+
+def links_in_tags(url):
     try:
-        percentile = internals / float(total) * 100
-    except:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print("Error occurred while making the request:", str(e))
+        return None
+
+    html_content = response.text
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    internals = soup.find_all('a')  # Modify this line based on your specific requirements
+    externals = soup.find_all('a', href=lambda href: href and href.startswith('https'))  # Modified line to check if href is not None
+
+    total = len(internals) + len(externals)
+    try:
+        percentile = len(internals) / float(total) * 100
+    except ZeroDivisionError:
         return 0
+
     return percentile
+
 
 #################################################################################################################################
 #              Server Form Handler  : sfh in Zaini'2019

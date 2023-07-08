@@ -4,6 +4,8 @@
 import re
 import os
 import nonsense
+from urllib.parse import urlparse
+
 
 
 #LOCALHOST_PATH = "/var/www/html/"
@@ -28,6 +30,102 @@ def having_ip_address(url):
         return 1
     else:
         return 0
+
+#################################################################################################################################
+#               URL NB 
+#################################################################################################################################
+
+def nb_hyphens(text):
+    return text.count('-')
+
+def nb_qm(text):
+    return text.count('?')
+
+def nb_space(text):
+    return text.count(' ')
+
+#################################################################################################################################
+#               URL words 
+#################################################################################################################################
+
+def shortest_words_raw(words_raw):
+    if len(words_raw) == 0:
+        return 0
+
+    shortest_length = len(min(words_raw, key=len))
+    return shortest_length
+
+
+from collections import deque
+
+def shortest_word_path(subdomain, tld, words_raw):
+    if subdomain == tld:
+        return 0
+
+    all_words = [subdomain] + words_raw + [tld]
+    word_set = set(all_words)
+    
+    prev_word = {word: None for word in word_set}
+    
+    queue = deque()
+    queue.append(subdomain)
+
+    while queue:
+        current_word = queue.popleft()
+        
+        if current_word == tld:
+            # Reconstruct the path from end to start
+            path_length = 1
+            while prev_word[current_word] != subdomain:
+                current_word = prev_word[current_word]
+                path_length += 1
+            return path_length
+        
+        for word in words_raw:
+            if word not in prev_word:
+                prev_word[word] = current_word
+                queue.append(word)
+
+    return -1  # No path found
+
+def get_word_neighbors(word, word_set):
+    neighbors = []
+
+    for i in range(len(word)):
+        for char in "abcdefghijklmnopqrstuvwxyz":
+            new_word = word[:i] + char + word[i+1:]
+            if new_word in word_set and new_word != word:
+                neighbors.append(new_word)
+
+    return neighbors
+
+
+from urllib.parse import urlparse
+
+def longest_word_host(url):
+    url_str = '.'.join(url)  # Convert tuple to a string
+    parsed_url = urlparse(url_str)
+    hostname = parsed_url.hostname
+
+    if hostname:
+        words = hostname.split('.')
+        longest_word_length = max(len(word) for word in words)
+        return longest_word_length
+    else:
+        return 0
+
+
+    
+def avg_words_raw(words_raw):
+    if len(words_raw) == 0:
+        return 0
+
+    total_length = sum(len(word) for word in words_raw)
+    average_length = total_length / len(words_raw)
+    return average_length
+
+
+
 
 #################################################################################################################################
 #               URL hostname length 
@@ -215,8 +313,18 @@ def https_token(scheme):
 #               Ratio of digits in hostname 
 #################################################################################################################################
 
+# def ratio_digits(hostname):
+#     return len(re.sub("[^0-9]", "", hostname))/len(hostname)
+# def ratio_digits(hostname):
+#     digits = re.sub("[^0-9]", "", hostname)
+#     ratio = len(digits) / len(hostname)
+#     return ratio
+import re
+
 def ratio_digits(hostname):
-    return len(re.sub("[^0-9]", "", hostname))/len(hostname)
+    digits = re.sub("[^0-9]", "", str(hostname))
+    ratio = len(digits) / len(str(hostname))
+    return ratio
 
 #################################################################################################################################
 #               Count number of digits in domain/subdomain/path
@@ -242,7 +350,7 @@ def count_tilde(full_url):
 def phish_hints(url_path):
     count = 0
     for hint in HINTS:
-        count += url_path.lower().count(hint)
+        count += str(url_path).lower().count(hint)
     return count
 
 #################################################################################################################################
@@ -431,6 +539,17 @@ def average_word_length(words_raw):
         return 0
     return sum(len(word) for word in words_raw) / len(words_raw)
 
+#################################################################################################################################
+#               length hostname length in raw word list (Sahingoz2019)
+#################################################################################################################################
+
+def length_hostname(url):
+    parsed_url = urlparse(url)
+    hostname = parsed_url.hostname
+    if hostname:
+        return len(hostname)
+    else:
+        return 0
 #################################################################################################################################
 #               longest word length in raw word list (Sahingoz2019)
 #################################################################################################################################

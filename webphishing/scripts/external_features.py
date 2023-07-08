@@ -168,14 +168,15 @@ def global_rank(domain):
 #               Google index
 #################################################################################################################################
 
-
+import requests
+from bs4 import BeautifulSoup
 from urllib.parse import urlencode
 
 def google_index(url):
     #time.sleep(.6)
-    user_agent =  'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'
-    headers = {'User-Agent' : user_agent}
-    query = {'q': 'site:' + url}
+    user_agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'
+    headers = {'User-Agent': user_agent}
+    query = {'q': 'site:' + str(url)}
     google = "https://www.google.com/search?" + urlencode(query)
     data = requests.get(google, headers=headers)
     data.encoding = 'ISO-8859-1'
@@ -189,9 +190,10 @@ def google_index(url):
             return 0
         else:
             return 1
-        
+
     except AttributeError:
         return 1
+
 
 #print(google_index('http://www.google.com'))
 #################################################################################################################################
